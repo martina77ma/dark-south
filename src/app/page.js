@@ -8,7 +8,7 @@ export default function Home() {
   const [elements, setElements] = useState([]);
   const [selected, setSelected] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [eventSubcategory, setEventSubcategory] = useState("");
   const [eventDetail, setEventDetail] = useState("");

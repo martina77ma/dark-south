@@ -266,16 +266,17 @@ export default function GraphView({
           }
         },
 
-        // ARCHI NORMALI
+        // ARCHI NORMALI CON GRADIENTE
         {
           selector: "edge",
           style: {
-            width: 1.5,
-            "line-color": "#d1d5db",
+            width: 1.1,
             "curve-style": "bezier",
-            opacity: 0.6,
-            "transition-property": "opacity, width, line-color",
-            "transition-duration": "220ms"
+            "line-fill": "linear-gradient",
+            "line-gradient-stop-positions": "0% 100%",
+            opacity: 0.28,
+            "transition-property": "opacity, width",
+            "transition-duration": "280ms"
           }
         },
 
@@ -283,7 +284,8 @@ export default function GraphView({
         {
           selector: ".interaction-edge-muted",
           style: {
-            opacity: 0.06
+            opacity: 0.01,
+            width: 0.1
           }
         },
 
@@ -295,11 +297,19 @@ export default function GraphView({
           }
         },
 
+        // STATO ATTENUATO ARCHI
+        {
+          selector: ".faded-edge",
+          style: {
+            opacity: 0.05
+          }
+        },
+
         // NODO ATTIVO GENERICO
         {
           selector: ".active-node",
           style: {
-            "border-width": 4,
+            "border-width": 1.1,
             "border-color": "#111827",
             opacity: 1
           }
@@ -367,13 +377,12 @@ export default function GraphView({
           }
         },
 
-        // ARCHI ATTIVI GENERICI
+        // ARCHI ATTIVI: RESTANO IN GRADIENTE
         {
           selector: ".active-edge",
           style: {
-            width: 3,
-            "line-color": "#111827",
-            opacity: 1
+            width: 1.5,
+            opacity: 0.30
           }
         }
       ]
@@ -383,34 +392,49 @@ export default function GraphView({
     let isPointerDown = false;
     let hasDragged = false;
 
-function muteEdges() {
-  cy.edges().addClass("interaction-edge-muted");
-}
-
-function restoreEdges() {
-  clearTimeout(interactionTimeout);
-
-  interactionTimeout = setTimeout(() => {
-    if (!isPointerDown) {
-      cy.edges().removeClass("interaction-edge-muted");
+    function muteEdges() {
+      cy.edges().addClass("interaction-edge-muted");
     }
-  }, 220);
-}
 
-function handleViewportInteraction() {
-  muteEdges();
+    function restoreEdges() {
+      clearTimeout(interactionTimeout);
 
-  if (!isPointerDown) {
-    restoreEdges();
-  }
-}
+      interactionTimeout = setTimeout(() => {
+        if (!isPointerDown) {
+          cy.edges().removeClass("interaction-edge-muted");
+        }
+      }, 220);
+    }
+
+    function handleViewportInteraction() {
+      muteEdges();
+
+      if (!isPointerDown) {
+        restoreEdges();
+      }
+    }
+
+    function applyEdgeGradients() {
+      cy.edges().forEach((edge) => {
+        const sourceNode = edge.source();
+        const targetNode = edge.target();
+
+        const sourceColor = sourceNode.style("background-color");
+        const targetColor = targetNode.style("background-color");
+
+        edge.style({
+          "line-fill": "linear-gradient",
+          "line-gradient-stop-colors": `${sourceColor} ${targetColor}`,
+          "line-gradient-stop-positions": "0% 100%"
+        });
+      });
+    }
 
     function clearFocus() {
       cy.elements().removeClass(
-        "faded active-node neighbor-node active-edge show-label clicked-label filter-focus filter-context filter-secondary filter-faded interaction-edge-muted"
+        "faded faded-edge active-node neighbor-node active-edge show-label clicked-label filter-focus filter-context filter-secondary filter-faded interaction-edge-muted"
       );
     }
-
 
     function applySearch(term) {
       cy.elements().removeClass("search-match search-faded");
@@ -655,6 +679,7 @@ function handleViewportInteraction() {
       }
 
       cy.elements().addClass("faded");
+      cy.edges().addClass("faded-edge");
 
       node.removeClass("faded");
       node.addClass("active-node");
@@ -682,44 +707,45 @@ function handleViewportInteraction() {
 
     const container = ref.current;
 
-function handleMouseDown() {
-  isPointerDown = true;
-  hasDragged = false;
-}
+    function handleMouseDown() {
+      isPointerDown = true;
+      hasDragged = false;
+    }
 
-function handleMouseMove() {
-  if (!isPointerDown) return;
+    function handleMouseMove() {
+      if (!isPointerDown) return;
 
-  if (!hasDragged) {
-    hasDragged = true;
-    muteEdges();
-  }
-}
+      if (!hasDragged) {
+        hasDragged = true;
+        muteEdges();
+      }
+    }
 
-function handleMouseUp() {
-  if (hasDragged) {
-    restoreEdges();
-  }
+    function handleMouseUp() {
+      if (hasDragged) {
+        restoreEdges();
+      }
 
-  isPointerDown = false;
-  hasDragged = false;
-}
+      isPointerDown = false;
+      hasDragged = false;
+    }
 
-container.addEventListener("mousedown", handleMouseDown);
-container.addEventListener("mousemove", handleMouseMove);
-window.addEventListener("mouseup", handleMouseUp);
+    container.addEventListener("mousedown", handleMouseDown);
+    container.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
 
+    applyEdgeGradients();
     clearFocus();
     applySearch(searchTerm || "");
     applyFilters();
 
     return () => {
-  clearTimeout(interactionTimeout);
-  container.removeEventListener("mousedown", handleMouseDown);
-  container.removeEventListener("mousemove", handleMouseMove);
-  window.removeEventListener("mouseup", handleMouseUp);
-  cy.destroy();
-};
+      clearTimeout(interactionTimeout);
+      container.removeEventListener("mousedown", handleMouseDown);
+      container.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      cy.destroy();
+    };
   }, [
     elements,
     onNodeSelect,
