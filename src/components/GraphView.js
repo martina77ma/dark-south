@@ -380,6 +380,30 @@ export default function GraphView({
     });
 
     let interactionTimeout;
+    let isPointerDown = false;
+    let hasDragged = false;
+
+function muteEdges() {
+  cy.edges().addClass("interaction-edge-muted");
+}
+
+function restoreEdges() {
+  clearTimeout(interactionTimeout);
+
+  interactionTimeout = setTimeout(() => {
+    if (!isPointerDown) {
+      cy.edges().removeClass("interaction-edge-muted");
+    }
+  }, 220);
+}
+
+function handleViewportInteraction() {
+  muteEdges();
+
+  if (!isPointerDown) {
+    restoreEdges();
+  }
+}
 
     function clearFocus() {
       cy.elements().removeClass(
@@ -387,15 +411,6 @@ export default function GraphView({
       );
     }
 
-    function muteEdgesDuringInteraction() {
-      cy.edges().addClass("interaction-edge-muted");
-
-      clearTimeout(interactionTimeout);
-
-      interactionTimeout = setTimeout(() => {
-        cy.edges().removeClass("interaction-edge-muted");
-      }, 220);
-    }
 
     function applySearch(term) {
       cy.elements().removeClass("search-match search-faded");
@@ -662,17 +677,49 @@ export default function GraphView({
 
     // DURANTE PAN E ZOOM GLI ARCHI SI ATTENUANO MOLTO
     cy.on("pan zoom", () => {
-      muteEdgesDuringInteraction();
+      handleViewportInteraction();
     });
+
+    const container = ref.current;
+
+function handleMouseDown() {
+  isPointerDown = true;
+  hasDragged = false;
+}
+
+function handleMouseMove() {
+  if (!isPointerDown) return;
+
+  if (!hasDragged) {
+    hasDragged = true;
+    muteEdges();
+  }
+}
+
+function handleMouseUp() {
+  if (hasDragged) {
+    restoreEdges();
+  }
+
+  isPointerDown = false;
+  hasDragged = false;
+}
+
+container.addEventListener("mousedown", handleMouseDown);
+container.addEventListener("mousemove", handleMouseMove);
+window.addEventListener("mouseup", handleMouseUp);
 
     clearFocus();
     applySearch(searchTerm || "");
     applyFilters();
 
     return () => {
-      clearTimeout(interactionTimeout);
-      cy.destroy();
-    };
+  clearTimeout(interactionTimeout);
+  container.removeEventListener("mousedown", handleMouseDown);
+  container.removeEventListener("mousemove", handleMouseMove);
+  window.removeEventListener("mouseup", handleMouseUp);
+  cy.destroy();
+};
   }, [
     elements,
     onNodeSelect,
