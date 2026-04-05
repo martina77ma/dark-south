@@ -47,7 +47,7 @@ export default function Sidebar({ node, onClose }) {
     color: "#111827",
     lineHeight: 1.15,
     paddingRight: "12px",
-    fontFamily: "Poppins, sans-serif"
+    fontFamily: "Inter, sans-serif"
   };
 
   const descriptionStyle = {
@@ -71,7 +71,7 @@ export default function Sidebar({ node, onClose }) {
     margin: 0,
     paddingBottom: "8px",
     borderBottom: "1px solid #e5e7eb",
-    fontFamily: "Poppins, sans-serif"
+    fontFamily: "Inter, sans-serif"
   };
 
   const primaryValueStyle = {
@@ -479,8 +479,48 @@ export default function Sidebar({ node, onClose }) {
             </div>
           )}
 
+          {node.tutela && (
+  <div
+    style={{
+      marginTop: "20px",
+      marginBottom: "1px",
+      paddingTop: "16px",
+      borderTop: "1px solid #e5e7eb"
+    }}
+  >
+    <h3
+      style={{
+        margin: "0 0 6px 0",
+        fontSize: "12px",
+        fontWeight: 600,
+        fontFamily: "var(--font-inter)",
+        letterSpacing: "0.02em",
+        textTransform: "uppercase",
+        color: "#6b7280"
+      }}
+    >
+      Tutela
+    </h3>
+
+    <p
+      style={{
+        margin: 0,
+        fontSize: "15px",
+        lineHeight: 1.6,
+        fontFamily: "var(--font-inter)",
+        color: "#111827"
+      }}
+    >
+      {node.tutela}
+    </p>
+  </div>
+)}
+
           {(node.eventSubcategory || node.eventDetail) && (
-            <div style={{ marginBottom: "22px" }}>
+            <div style={{
+              marginTop: "22px",
+              marginBottom: "22px"
+              }}>
               <h3
                 style={{
                   fontSize: "13px",
@@ -491,7 +531,7 @@ export default function Sidebar({ node, onClose }) {
                   margin: 0,
                   paddingBottom: "8px",
                   borderBottom: "1px solid #e5e7eb",
-                  fontFamily: "Poppins, sans-serif"
+                  fontFamily: "Inter, sans-serif"
                 }}
               >
                 Evento
@@ -540,7 +580,7 @@ export default function Sidebar({ node, onClose }) {
                   margin: 0,
                   paddingBottom: "8px",
                   borderBottom: "1px solid #e5e7eb",
-                  fontFamily: "Poppins, sans-serif"
+                  fontFamily: "Inter, sans-serif"
                 }}
               >
                 Luogo
@@ -589,7 +629,7 @@ export default function Sidebar({ node, onClose }) {
                   margin: 0,
                   paddingBottom: "8px",
                   borderBottom: "1px solid #e5e7eb",
-                  fontFamily: "Poppins, sans-serif"
+                  fontFamily: "Inter, sans-serif"
                 }}
               >
                 Tipo di traccia
@@ -638,7 +678,7 @@ export default function Sidebar({ node, onClose }) {
                   margin: 0,
                   paddingBottom: "8px",
                   borderBottom: "1px solid #e5e7eb",
-                  fontFamily: "Poppins, sans-serif"
+                  fontFamily: "Inter, sans-serif"
                 }}
               >
                 Comunità
@@ -716,7 +756,7 @@ export default function Sidebar({ node, onClose }) {
                   margin: 0,
                   paddingBottom: "8px",
                   borderBottom: "1px solid #e5e7eb",
-                  fontFamily: "Poppins, sans-serif"
+                  fontFamily: "Inter, sans-serif"
                 }}
               >
                 Altro

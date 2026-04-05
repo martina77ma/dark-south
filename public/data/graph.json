@@ -867,6 +867,7 @@
     "communitySubcategory": "",
     "place": "Reggio Calabria, Località Gallina, Via Regina Elena",
     "description": "Ex Carcere",
+    "tutela": "si",
     "images": ["/images/cg1p.JPG", "/images/cg2p.JPG", "/images/cg3p.JPG"],
     "other": "-",
     "keywords": ["parola1", "parola2"]
@@ -889,6 +890,25 @@
     "images": ["/images/cf1.JPG", "/images/cf2.JPG", "/images/cf3.JPG"],
     "other": "-",
     "keywords": ["parola3", "parola4"]
+  },
+  {
+    "id": "n49",
+    "label": "Campo di concentramento di Vittoria",
+    "size": 10,
+    "editorSection": "Campi di concentramento e internamento",
+    "eventCategory": "Eventi",
+    "eventSubcategory": "Pratiche di segregazione",
+    "eventDetail": "Campi di concentramento e internamento",
+    "placeCategory": "Sicilia",
+    "traceCategory": "Tracce non intenzionali",
+    "traceSubcategory": "Spazi urbani",
+    "communityCategory": "",
+    "communitySubcategory": "",
+    "place": "Vittoria (RG), Via Giuseppe Garibaldi",
+    "description": "Campo di concentramento per soldati ungheresi",
+    "images": [""],
+    "other": "-",
+    "keywords": ["parola5", "parola6"]
   }
 ],
 
@@ -1109,6 +1129,18 @@
     {
       "source": "n48",
       "target": "n13"
+    },
+    {
+      "source": "n49",
+      "target": "n14"
+    },
+    {
+      "source": "n49",
+      "target": "n25"
+    },
+    {
+      "source": "n49",
+      "target": "n46"
     }
 
   ]
