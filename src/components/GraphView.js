@@ -12,14 +12,23 @@ export default function GraphView({
   placeCategory,
   traceCategory,
   traceSubcategory,
-  communitySubcategory
+  communitySubcategory,
+  onReady,
+  sidebarOpen,
+  sidebarWidth
 }) {
   const ref = useRef(null);
   const cyRef = useRef(null);
   const layoutPositionsRef = useRef(null);
   const baseSizeRef = useRef(null);
   const graphFrameRef = useRef(null);
-  
+  const sidebarOpenRef = useRef(sidebarOpen);
+  const sidebarWidthRef = useRef(sidebarWidth);
+
+  useEffect(() => {
+  sidebarOpenRef.current = sidebarOpen;
+  sidebarWidthRef.current = sidebarWidth;
+}, [sidebarOpen, sidebarWidth]);
 
   useEffect(() => {
     if (!elements.length || !ref.current) return;
@@ -119,11 +128,11 @@ export default function GraphView({
 
   // 1. POSIZIONI GUIDATE DEI 4 NODI PRINCIPALI
   const mainAnchors = {
-    Tracce: { x: width * 0.20, y: height * 0.40 },
-    Comunità: { x: width * 0.45, y: height * 0.38 },
-    Luoghi: { x: width * 0.72, y: height * 0.56 },
-    Eventi: { x: width * 0.75, y: height * 0.22 }
-  };
+  Eventi: { x: width * 0.20, y: height * 0.40 },     
+  Tracce: { x: width * 0.45, y: height * 0.38 },     
+  Comunità: { x: width * 0.72, y: height * 0.56 },   
+  Luoghi: { x: width * 0.75, y: height * 0.22 }      
+};
 
   const mainNodes = nodeElements.filter(
     (node) =>
@@ -218,24 +227,13 @@ export default function GraphView({
   return [...positionedNodes, ...edgeElements];
 }
 
-    const positionedElements = generateStarPositions(
+    layoutPositionsRef.current = generateStarPositions(
       elements,
       containerWidth,
       containerHeight
-    );
-    if (!layoutPositionsRef.current) {
-  layoutPositionsRef.current = generateStarPositions(
-    elements,
-    containerWidth,
-    containerHeight
-  );
-}
+   );
 
-layoutPositionsRef.current = generateStarPositions(
-  elements,
-  containerWidth,
-  containerHeight
-);
+    const positionedElements = layoutPositionsRef.current;
 
     const cy = cytoscape({
       container: ref.current,
@@ -662,8 +660,110 @@ layoutPositionsRef.current = generateStarPositions(
     });
 
     cyRef.current = cy;
-
     cy.fit(undefined, 120);
+
+    if (onReady) {
+  onReady({
+    zoomIn: () => {
+      const currentZoom = cy.zoom();
+      cy.zoom({
+        level: currentZoom * 1.2,
+        renderedPosition: {
+          x: cy.width() / 2,
+          y: cy.height() / 2
+        }
+      });
+    },
+
+    zoomOut: () => {
+      const currentZoom = cy.zoom();
+      cy.zoom({
+        level: currentZoom / 1.2,
+        renderedPosition: {
+          x: cy.width() / 2,
+          y: cy.height() / 2
+        }
+      });
+    },
+
+    recenter: () => {
+      cy.fit(undefined, 120);
+    },
+
+    focusSelection: () => {
+      const activeNode = cy.nodes(".active-node");
+      const searchMatches = cy.nodes(".search-match");
+      const filterFocus = cy.nodes(".filter-focus");
+      const filterContext = cy.nodes(".filter-context");
+
+      let targetNodes = cy.collection();
+
+      if (activeNode.length > 0) {
+        const neighborhood = activeNode.closedNeighborhood();
+        targetNodes = neighborhood;
+    } else if (searchMatches.length > 0) {
+         targetNodes = searchMatches.closedNeighborhood();
+        } else if (filterFocus.length > 0 || filterContext.length > 0) {
+            targetNodes = filterFocus
+            .union(filterContext)
+            .union(cy.edges(".filter-context"));
+        }
+
+      if (targetNodes.length === 0) return;
+
+      const bb = targetNodes.boundingBox();
+
+      let basePadding = 120;
+      if (activeNode.length > 0) basePadding = 160;
+      if (searchMatches.length > 0) basePadding = 130;
+      if (filterFocus.length > 0 || filterContext.length > 0) basePadding = 140;
+
+      const reservedRight = sidebarOpenRef.current
+        ? (sidebarWidthRef.current || 0) + 40
+        : 0;
+
+      const fullWidth = cy.width();
+      const fullHeight = cy.height();
+
+      const usableWidth = fullWidth - reservedRight;
+      const usableHeight = fullHeight;
+
+      if (bb.w <= 0 || bb.h <= 0 || usableWidth <= 0 || usableHeight <= 0) {
+        return;
+      }
+
+      const zoomX = (usableWidth - basePadding * 2) / bb.w;
+      const zoomY = (usableHeight - basePadding * 2) / bb.h;
+
+      let zoom = Math.min(zoomX, zoomY);
+
+      const minZoom = cy.minZoom ? cy.minZoom() : 0.1;
+      const maxZoom = cy.maxZoom ? cy.maxZoom() : 10;
+
+      zoom = Math.max(minZoom, Math.min(maxZoom, zoom));
+
+      const bbCenterX = bb.x1 + bb.w / 2;
+      const bbCenterY = bb.y1 + bb.h / 2;
+
+      const usableCenterX = usableWidth / 2;
+      const usableCenterY = usableHeight / 2;
+
+      const panX = usableCenterX - bbCenterX * zoom;
+      const panY = usableCenterY - bbCenterY * zoom;
+
+      cy.animate(
+        {
+          zoom,
+          pan: { x: panX, y: panY }
+        },
+        {
+          duration: 220,
+          easing: "ease-out"
+        }
+      );
+    }
+  });
+}
 
     let interactionTimeout;
     let isPointerDown = false;
@@ -1146,9 +1246,6 @@ function highlightCollection(nodesCollection) {
     window.addEventListener("mouseup", handleMouseUp);
 
     applyEdgeGradients();
-    clearFocus();
-    applySearch(searchTerm || "");
-    applyFilters();
 
     return () => {
       clearTimeout(interactionTimeout);
@@ -1417,3 +1514,4 @@ function highlightCollection(nodesCollection) {
   </div>
 );
 }
+  

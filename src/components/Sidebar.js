@@ -483,7 +483,7 @@ export default function Sidebar({ node, onClose }) {
   <div
     style={{
       marginTop: "20px",
-      marginBottom: "1px",
+      marginBottom: "1",
       paddingTop: "16px",
       borderTop: "1px solid #e5e7eb"
     }}
@@ -519,8 +519,7 @@ export default function Sidebar({ node, onClose }) {
           {(node.eventSubcategory || node.eventDetail) && (
             <div style={{
               marginTop: "22px",
-              marginBottom: "22px"
-              }}>
+              marginBottom: "22px" }}>
               <h3
                 style={{
                   fontSize: "13px",
