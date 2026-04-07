@@ -24,11 +24,36 @@ export default function GraphView({
   const graphFrameRef = useRef(null);
   const sidebarOpenRef = useRef(sidebarOpen);
   const sidebarWidthRef = useRef(sidebarWidth);
+  const searchTermRef = useRef(searchTerm);
+  const eventSubcategoryRef = useRef(eventSubcategory);
+  const eventDetailRef = useRef(eventDetail);
+  const placeCategoryRef = useRef(placeCategory);
+  const traceCategoryRef = useRef(traceCategory);
+  const traceSubcategoryRef = useRef(traceSubcategory);
+  const communitySubcategoryRef = useRef(communitySubcategory);
 
   useEffect(() => {
   sidebarOpenRef.current = sidebarOpen;
   sidebarWidthRef.current = sidebarWidth;
-}, [sidebarOpen, sidebarWidth]);
+
+  searchTermRef.current = searchTerm;
+  eventSubcategoryRef.current = eventSubcategory;
+  eventDetailRef.current = eventDetail;
+  placeCategoryRef.current = placeCategory;
+  traceCategoryRef.current = traceCategory;
+  traceSubcategoryRef.current = traceSubcategory;
+  communitySubcategoryRef.current = communitySubcategory;
+}, [
+  sidebarOpen,
+  sidebarWidth,
+  searchTerm,
+  eventSubcategory,
+  eventDetail,
+  placeCategory,
+  traceCategory,
+  traceSubcategory,
+  communitySubcategory
+]);
 
   useEffect(() => {
     if (!elements.length || !ref.current) return;
@@ -1064,221 +1089,127 @@ function highlightCollection(nodesCollection) {
   updateZoomLabelMode();
 }
 
-    function applySearch(term) {
-      cy.elements().removeClass("search-match search-faded search-edge");
+   function applySearch(term) {
+  cy.elements().removeClass("search-match search-faded search-edge");
 
-      const normalized = term.trim().toLowerCase();
+  const normalized = term.trim().toLowerCase();
 
-      if (!normalized) {
-        return;
-      }
-
-      const matchedNodes = cy.nodes().filter((node) => {
-        const label = String(node.data("label") || "").toLowerCase();
-        const description = String(node.data("description") || "").toLowerCase();
-        const keywords = node.data("keywords") || [];
-
-        const keywordMatch =
-          Array.isArray(keywords) &&
-          keywords.some((keyword) =>
-            String(keyword).toLowerCase().includes(normalized)
-           );
-
-        return (
-          label.includes(normalized) ||
-          description.includes(normalized) ||
-          keywordMatch
-        );
-     });
-
-      if (matchedNodes.length === 0) {
-        cy.elements().addClass("search-faded");
-        return;
-      }
-
-      cy.elements().addClass("search-faded");
-
-      matchedNodes.forEach((node) => {
-  node.removeClass("search-faded");
-  node.addClass("search-match");
-
-  if (Number(node.data("size")) < 45) {
-    node.addClass("show-label");
+  if (!normalized) {
+    return;
   }
 
-  const neighborhood = node.closedNeighborhood();
-  neighborhood.removeClass("search-faded");
+  const matchedNodes = cy.nodes().filter((node) => {
+    const size = Number(node.data("size"));
+    if (size !== 10) return false;
 
-  neighborhood.nodes().forEach((n) => {
-    if (Number(n.data("size")) < 45) {
-      n.addClass("show-label");
-    }
-  });
+    const label = String(node.data("label") || "").toLowerCase();
+    const description = String(node.data("description") || "").toLowerCase();
+    const keywords = node.data("keywords") || [];
 
-  node.connectedEdges().addClass("search-edge");
-});
-
-      if (matchedNodes.length === 1) {
-         const matchedSize = Number(matchedNodes[0].data("size"));
-
-         if (matchedSize === 10) {
-           onNodeSelect(matchedNodes[0].data());
-         } else {
-            onNodeSelect(null);
-         }
-       }
-    }
-
-    function applyFilters() {
-      cy.elements().removeClass(
-        "filter-faded filter-focus filter-context filter-secondary"
+    const keywordMatch =
+      Array.isArray(keywords) &&
+      keywords.some((keyword) =>
+        String(keyword).toLowerCase().includes(normalized)
       );
 
-      const sections = [];
+    return (
+      label.includes(normalized) ||
+      description.includes(normalized) ||
+      keywordMatch
+    );
+  });
 
-      if (eventSubcategory || eventDetail) {
-        sections.push((node) => {
-          const nodeEventSubcategory = node.data("eventSubcategory") || "";
-          const nodeEventDetail = node.data("eventDetail") || "";
+  if (matchedNodes.length === 0) {
+    cy.elements().addClass("search-faded");
+    return;
+  }
 
-          const subcategoryMatch =
-            !eventSubcategory || nodeEventSubcategory === eventSubcategory;
+  cy.elements().addClass("search-faded");
 
-          const detailMatch =
-            !eventDetail || nodeEventDetail === eventDetail;
+  matchedNodes.forEach((node) => {
+    node.removeClass("search-faded");
+    node.addClass("search-match");
+    node.addClass("show-label");
+  });
+}
 
-          return subcategoryMatch && detailMatch;
-        });
-      }
+    function applyFilters() {
+  cy.elements().removeClass(
+    "filter-faded filter-focus filter-context filter-secondary"
+  );
 
-      if (placeCategory) {
-        sections.push((node) => {
-          const nodePlaceCategory = node.data("placeCategory") || "";
-          return nodePlaceCategory === placeCategory;
-        });
-      }
+  const currentEventSubcategory = eventSubcategoryRef.current || "";
+  const currentEventDetail = eventDetailRef.current || "";
+  const currentPlaceCategory = placeCategoryRef.current || "";
+  const currentTraceCategory = traceCategoryRef.current || "";
+  const currentTraceSubcategory = traceSubcategoryRef.current || "";
+  const currentCommunitySubcategory = communitySubcategoryRef.current || "";
 
-      if (traceCategory || traceSubcategory) {
-        sections.push((node) => {
-          const nodeTraceCategory = node.data("traceCategory") || "";
-          const nodeTraceSubcategory = node.data("traceSubcategory") || "";
+  const sections = [];
 
-          const categoryMatch =
-            !traceCategory || nodeTraceCategory === traceCategory;
+  if (currentEventSubcategory || currentEventDetail) {
+    sections.push((node) => {
+      const nodeEventSubcategory = node.data("eventSubcategory") || "";
+      const nodeEventDetail = node.data("eventDetail") || "";
 
-          const subcategoryMatch =
-            !traceSubcategory || nodeTraceSubcategory === traceSubcategory;
+      const subcategoryMatch =
+        !currentEventSubcategory || nodeEventSubcategory === currentEventSubcategory;
 
-          return categoryMatch && subcategoryMatch;
-        });
-      }
+      const detailMatch =
+        !currentEventDetail || nodeEventDetail === currentEventDetail;
 
-      if (communitySubcategory) {
-        sections.push((node) => {
-          const nodeCommunitySubcategory = node.data("communitySubcategory") || "";
-          return nodeCommunitySubcategory === communitySubcategory;
-        });
-      }
+      return subcategoryMatch && detailMatch;
+    });
+  }
 
-      if (sections.length === 0) {
-        return;
-      }
+  if (currentPlaceCategory) {
+    sections.push((node) => {
+      const nodePlaceCategory = node.data("placeCategory") || "";
+      return nodePlaceCategory === currentPlaceCategory;
+    });
+  }
 
-      cy.elements().addClass("filter-faded");
+  if (currentTraceCategory || currentTraceSubcategory) {
+    sections.push((node) => {
+      const nodeTraceCategory = node.data("traceCategory") || "";
+      const nodeTraceSubcategory = node.data("traceSubcategory") || "";
 
-      const matchedNodes = cy.nodes().filter((node) => {
-        return sections.every((matchFn) => matchFn(node));
-      });
+      const categoryMatch =
+        !currentTraceCategory || nodeTraceCategory === currentTraceCategory;
 
-      const contextNodeIds = new Set();
-      const focusNodeIds = new Set();
+      const subcategoryMatch =
+        !currentTraceSubcategory || nodeTraceSubcategory === currentTraceSubcategory;
 
-      function addContextFromNode(node) {
-        const data = node.data();
+      return categoryMatch && subcategoryMatch;
+    });
+  }
 
-        focusNodeIds.add(node.id());
+  if (currentCommunitySubcategory) {
+    sections.push((node) => {
+      const nodeCommunitySubcategory = node.data("communitySubcategory") || "";
+      return nodeCommunitySubcategory === currentCommunitySubcategory;
+    });
+  }
 
-        const labelsToKeep = [];
+  if (sections.length === 0) {
+    return;
+  }
 
-        if (data.eventSubcategory) {
-          labelsToKeep.push("Eventi");
-          labelsToKeep.push(data.eventSubcategory);
-        }
+  cy.elements().addClass("filter-faded");
 
-        if (data.eventDetail) {
-          labelsToKeep.push(data.eventDetail);
-        }
+  const matchedNodes = cy.nodes().filter((node) => {
+    const size = Number(node.data("size"));
+    if (size !== 10) return false;
 
-        if (data.placeCategory) {
-          labelsToKeep.push("Luoghi");
-          labelsToKeep.push(data.placeCategory);
-        }
+    return sections.every((matchFn) => matchFn(node));
+  });
 
-        if (data.traceCategory) {
-          labelsToKeep.push("Tracce");
-
-          if (data.traceCategory === "Tracce intenzionali") {
-            labelsToKeep.push("Intenzionali");
-          }
-
-          if (data.traceCategory === "Tracce non intenzionali") {
-            labelsToKeep.push("Non intenzionali");
-          }
-        }
-
-        if (data.traceSubcategory) {
-          labelsToKeep.push(data.traceSubcategory);
-        }
-
-        if (data.communitySubcategory) {
-          labelsToKeep.push("Comunità");
-          labelsToKeep.push(data.communitySubcategory);
-        }
-
-        cy.nodes().forEach((candidate) => {
-          const label = candidate.data("label") || "";
-          if (labelsToKeep.includes(label)) {
-            contextNodeIds.add(candidate.id());
-          }
-        });
-      }
-
-      matchedNodes.forEach((node) => {
-        addContextFromNode(node);
-      });
-
-      cy.nodes().forEach((node) => {
-  if (focusNodeIds.has(node.id())) {
+  matchedNodes.forEach((node) => {
     node.removeClass("filter-faded");
     node.addClass("filter-focus");
-
-    if (Number(node.data("size")) < 45) {
-      node.addClass("show-label");
-    }
-  } else if (contextNodeIds.has(node.id())) {
-    node.removeClass("filter-faded");
-    node.addClass("filter-context");
-
-    if (Number(node.data("size")) < 45) {
-      node.addClass("show-label");
-    }
-  }
-});
-
-      cy.edges().forEach((edge) => {
-        const sourceId = edge.source().id();
-        const targetId = edge.target().id();
-
-        if (
-          (focusNodeIds.has(sourceId) || contextNodeIds.has(sourceId)) &&
-          (focusNodeIds.has(targetId) || contextNodeIds.has(targetId))
-        ) {
-          edge.removeClass("filter-faded");
-          edge.addClass("filter-context");
-        }
-      });
-
-    }
+    node.addClass("show-label");
+  });
+}
 cy.on("mouseover", "node", (e) => {
   const node = e.target;
   const size = Number(node.data("size"));
@@ -1427,8 +1358,31 @@ cy.on("tap", (e) => {
   if (e.target === cy) {
     clearFocus();
     onNodeSelect(null);
-    applySearch(searchTerm || "");
-    applyFilters();
+
+    const currentSearch = searchTermRef.current || "";
+    const currentEventSubcategory = eventSubcategoryRef.current || "";
+    const currentEventDetail = eventDetailRef.current || "";
+    const currentPlaceCategory = placeCategoryRef.current || "";
+    const currentTraceCategory = traceCategoryRef.current || "";
+    const currentTraceSubcategory = traceSubcategoryRef.current || "";
+    const currentCommunitySubcategory = communitySubcategoryRef.current || "";
+
+    const hasSearch = currentSearch.trim().length > 0;
+    const hasFilters =
+      !!currentEventSubcategory ||
+      !!currentEventDetail ||
+      !!currentPlaceCategory ||
+      !!currentTraceCategory ||
+      !!currentTraceSubcategory ||
+      !!currentCommunitySubcategory;
+
+    if (hasSearch) {
+      applySearch(currentSearch);
+    }
+
+    if (hasFilters) {
+      applyFilters();
+    }
   }
 });
 
