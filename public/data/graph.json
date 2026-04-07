@@ -869,7 +869,7 @@
     "lat": 38.08673,
     "lng": 15.68092,
     "description": "Ex Carcere...",
-    "tutela": "si",
+    "tutela": "D.S.R. n.84 del 25/03/2025",
     "images": ["/images/cg1p.JPG", "/images/cg2p.JPG", "/images/cg3p.JPG"],
     "other": "-",
     "keywords": ["parola1", "parola2"]
@@ -891,6 +891,7 @@
     "lat": 39.58284,
     "lng": 16.24463,
     "description": "da aggiungere...",
+    "tutela": "Vincolo 30 agosto 1999, secondo Legge 1/06/1939 n.1089",
     "images": ["/images/cf1.JPG", "/images/cf2.JPG", "/images/cf3.JPG"],
     "other": "-",
     "keywords": ["parola3", "parola4"]

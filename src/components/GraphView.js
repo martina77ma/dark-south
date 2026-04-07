@@ -662,101 +662,122 @@ export default function GraphView({
           }
         },
         {
-          selector: ".interaction-edge-muted",
-          style: {
-            opacity: 0.01,
-            width: 0.1
-          }
-        },
-        {
-          selector: ".faded",
-          style: {
-            opacity: 0.15
-          }
-        },
-        {
-          selector: ".faded-edge",
-          style: {
-            opacity: 0.03
-          }
-        },
-        {
-          selector: ".active-node",
-          style: {
-            opacity: 1,
-            "z-index": 999
-          }
-        },
-        {
-          selector: ".neighbor-node",
-          style: {
-            opacity: 1,
-          }
-        },
-        {
-          selector: ".search-match",
-          style: {
-            opacity: 1,
-            "z-index": 999
-          }
-        },
-        {
-          selector: ".search-faded",
-          style: {
-            opacity: 0.08
-          }
-        },
-        {
-          selector: ".filter-faded",
-          style: {
-            opacity: 0.08
-          }
-        },
-        {
-          selector: ".filter-focus",
-          style: {
-            opacity: 1,
-            "z-index": 999
-          }
-        },
-        {
-          selector: ".filter-context",
-          style: {
-            opacity: 0.7
-          }
-        },
-        {
-          selector: "edge.filter-context",
-          style: {
-            width: 2,
-            opacity: 0.65
-          }
-        },
-        {
-          selector: ".active-edge",
-          style: {
-             width: 2.0,
-             opacity: 0.65
-          }
-        },
-        {
-           selector: ".search-edge",
-           style: {
-             width: 2,
-             opacity: 0.6
-          }
-        },
-        {
-          selector: ".filter-secondary",
-          style: {
-          opacity: 0.18
-         }
-        },
+  selector: ".interaction-edge-muted",
+  style: {
+    opacity: 0.01,
+    width: 0.1
+  }
+},
+
+{
+  selector: ".faded",
+  style: {
+    opacity: 0.15
+  }
+},
+{
+  selector: ".faded-edge",
+  style: {
+    opacity: 0.03
+  }
+},
+
+{
+  selector: ".search-faded",
+  style: {
+    opacity: 0.08
+  }
+},
+{
+  selector: ".filter-faded",
+  style: {
+    opacity: 0.08
+  }
+},
+{
+  selector: ".filter-secondary",
+  style: {
+    opacity: 0.18
+  }
+},
+
+{
+  selector: ".search-match",
+  style: {
+    opacity: 1,
+    "z-index": 999
+  }
+},
+{
+  selector: ".filter-focus",
+  style: {
+    opacity: 1,
+    "z-index": 999
+  }
+},
+{
+  selector: ".filter-context",
+  style: {
+    opacity: 0.7
+  }
+},
+
+{
+  selector: ".active-node",
+  style: {
+    opacity: 1,
+    "z-index": 999
+  }
+},
+{
+  selector: ".neighbor-node",
+  style: {
+    opacity: 1,
+    "z-index": 998
+  }
+},
+
+{
+  selector: ".active-node.faded, .active-node.search-faded, .active-node.filter-faded, .active-node.filter-secondary",
+  style: {
+    opacity: 1,
+    "z-index": 999
+  }
+},
+{
+  selector: ".neighbor-node.faded, .neighbor-node.search-faded, .neighbor-node.filter-faded, .neighbor-node.filter-secondary",
+  style: {
+    opacity: 1,
+    "z-index": 998
+  }
+},
+
+{
+  selector: "edge.filter-context",
+  style: {
+    width: 2,
+    opacity: 0.65
+  }
+},
+{
+  selector: ".active-edge",
+  style: {
+    width: 2.0,
+    opacity: 0.65
+  }
+},
+{
+  selector: ".search-edge",
+  style: {
+    width: 2,
+    opacity: 0.6
+  }
+},
       ]
     });
 
     cyRef.current = cy;
-    cy.fit(undefined, 120);
+    cy.fit(undefined, 85);
 
     if (onReady) {
   onReady({
@@ -783,7 +804,7 @@ export default function GraphView({
     },
 
     recenter: () => {
-      cy.fit(undefined, 120);
+      cy.fit(undefined, 85);
     },
 
     focusSelection: () => {
@@ -1258,7 +1279,7 @@ function highlightCollection(nodesCollection) {
       });
 
     }
-    cy.on("mouseover", "node", (e) => {
+cy.on("mouseover", "node", (e) => {
   const node = e.target;
   const size = Number(node.data("size"));
   const label = node.data("label");
@@ -1283,9 +1304,9 @@ function highlightCollection(nodesCollection) {
   }
 
   if (isRegionNode) {
-  node.removeClass("show-45-fixed");
-  node.addClass("show-region-label");
-}
+    node.removeClass("show-45-fixed");
+    node.addClass("show-region-label");
+  }
 });
 
 cy.on("mouseout", "node", (e) => {
@@ -1317,103 +1338,145 @@ cy.on("mouseout", "node", (e) => {
   }
 });
 
-    cy.on("tap", "node", (e) => {
-      const node = e.target;
-      const size = Number(node.data("size"));
+cy.on("tap", "node", (e) => {
+  const node = e.target;
+  const size = Number(node.data("size"));
+  const zoom = cy.zoom();
+  const label = node.data("label");
 
-      if (size === 10) {
-        onNodeSelect(node.data());
-      } else {
-        onNodeSelect(null);
-      }
+  const isRegionNode = [
+    "Calabria",
+    "Campania",
+    "Puglia",
+    "Sicilia",
+    "Basilicata"
+  ].includes(label);
 
-      cy.nodes().removeClass("clicked-label");
-cy.nodes().removeClass("show-label");
-cy.nodes().removeClass("show-label-center");
-cy.nodes().removeClass("show-region-label");
+  const shouldShow45Hover = size === 45 && zoom < 2 && !isRegionNode;
 
-const zoom = cy.zoom();
-const label = node.data("label");
+  const hasFilteredResults =
+    cy.nodes(".filter-focus").length > 0 ||
+    cy.nodes(".filter-context").length > 0;
 
-const isRegionNode = [
-  "Calabria",
-  "Campania",
-  "Puglia",
-  "Sicilia",
-  "Basilicata"
-].includes(label);
+  // reset completo dello stato precedente
+  cy.elements().removeClass(
+    "faded faded-edge active-node neighbor-node active-edge filter-secondary search-faded filter-faded"
+  );
 
-const shouldShow45Hover = size === 45 && zoom < 2 && !isRegionNode;
+  // reset label temporanee/clickate
+  cy.nodes().removeClass("clicked-label");
+  cy.nodes().removeClass("show-label");
+  cy.nodes().removeClass("show-label-center");
+  cy.nodes().removeClass("show-region-label");
 
-if (size < 45 && !isRegionNode) {
-  node.addClass("show-label");
-  node.addClass("clicked-label");
-}
+  // sideboard solo per nodi da 10
+  if (size === 10) {
+    onNodeSelect(node.data());
+  } else {
+    onNodeSelect(null);
+  }
 
-if (shouldShow45Hover) {
-  node.addClass("show-label-center");
-  node.addClass("clicked-label");
-}
+  // label del nodo cliccato
+  if (size < 45 && !isRegionNode) {
+    node.addClass("show-label");
+    node.addClass("clicked-label");
+  }
 
-if (isRegionNode) {
-  node.removeClass("show-45-fixed");
-  node.addClass("show-region-label");
-  node.addClass("clicked-label");
-}
+  if (shouldShow45Hover) {
+    node.addClass("show-label-center");
+    node.addClass("clicked-label");
+  }
 
-      const hasFilteredResults =
-        cy.nodes(".filter-focus").length > 0 ||
-        cy.nodes(".filter-context").length > 0;
+  if (isRegionNode) {
+    node.removeClass("show-45-fixed");
+    node.addClass("show-region-label");
+    node.addClass("clicked-label");
+  }
 
-      if (hasFilteredResults) {
-        const currentFocusNodes = cy.nodes(".filter-focus");
-        const currentContextNodes = cy.nodes(".filter-context");
+  // ===== CASO FILTRI ATTIVI =====
+  if (hasFilteredResults) {
+    const currentFocusNodes = cy.nodes(".filter-focus");
+    const currentContextNodes = cy.nodes(".filter-context");
 
-        currentFocusNodes.forEach((n) => {
-          if (n.id() !== node.id()) {
-            n.removeClass("filter-focus");
-            n.addClass("filter-secondary");
-          }
-        });
+    cy.nodes().removeClass("filter-focus filter-secondary neighbor-node active-node");
+    cy.edges().removeClass("active-edge");
+    cy.edges().addClass("faded-edge");
 
-        node.removeClass("filter-secondary");
-        node.addClass("filter-focus");
-
-        currentContextNodes.forEach((n) => {
-          if (n.id() !== node.id()) {
-            n.addClass("filter-context");
-          }
-        });
-
-        return;
-      }
-
-      cy.elements().addClass("faded");
-      cy.edges().addClass("faded-edge");
-
-      node.removeClass("faded");
-      node.addClass("active-node");
-
-      const neighborhood = node.neighborhood();
-      neighborhood.removeClass("faded");
-
-      node.connectedEdges().addClass("active-edge");
-      node.connectedNodes().addClass("neighbor-node");
-
-      clearNodeHighlightStyles();
-      highlightNode(node);
-    });
-
-    cy.on("tap", (e) => {
-      if (e.target === cy) {
-        clearFocus();
-        onNodeSelect(null);
-        applySearch(searchTerm || "");
-        applyFilters();
+    currentFocusNodes.forEach((n) => {
+      if (n.id() !== node.id()) {
+        n.addClass("filter-secondary");
       }
     });
 
-    cy.on("pan", () => {
+    node.removeClass("filter-secondary");
+    node.addClass("filter-focus");
+    node.addClass("active-node");
+
+    currentContextNodes.forEach((n) => {
+      if (n.id() !== node.id()) {
+        n.addClass("filter-context");
+      }
+    });
+
+    const neighborhood = node.closedNeighborhood();
+    const connectedNodes = neighborhood.nodes().difference(node);
+    const connectedEdges = neighborhood.edges();
+
+    connectedNodes.removeClass(
+      "faded search-faded filter-faded filter-secondary active-node"
+    );
+    connectedNodes.addClass("neighbor-node");
+
+    connectedEdges.removeClass(
+      "faded-edge interaction-edge-muted filter-context search-edge"
+    );
+    connectedEdges.addClass("active-edge");
+
+    clearNodeHighlightStyles();
+    highlightNode(node);
+    return;
+  }
+
+  // ===== CASO CLICK NORMALE =====
+  cy.elements().addClass("faded");
+  cy.edges().addClass("faded-edge");
+
+  const neighborhood = node.closedNeighborhood();
+  const connectedNodes = neighborhood.nodes().difference(node);
+  const connectedEdges = neighborhood.edges();
+
+  // nodo attivo
+  node.removeClass(
+    "faded search-faded filter-faded filter-secondary neighbor-node"
+  );
+  node.addClass("active-node");
+
+  // nodi collegati
+  connectedNodes.removeClass(
+    "faded search-faded filter-faded filter-secondary active-node"
+  );
+  connectedNodes.addClass("neighbor-node");
+
+  // archi collegati
+  connectedEdges.removeClass(
+    "faded-edge interaction-edge-muted search-edge filter-context"
+  );
+  connectedEdges.addClass("active-edge");
+
+  clearNodeHighlightStyles();
+  highlightNode(node);
+});
+
+cy.on("tap", (e) => {
+  if (e.target === cy) {
+    clearFocus();
+    onNodeSelect(null);
+    applySearch(searchTerm || "");
+    applyFilters();
+  }
+});
+
+cy.on("pan", () => {
   handleViewportInteraction();
 });
 
@@ -1473,17 +1536,17 @@ return () => {
   function clearNodeHighlightStyles() {
     cy.nodes().forEach((node) => {
       node.removeStyle(
-        "background-color border-color border-width underlay-color underlay-padding underlay-opacity underlay-shape color"
+        "background-color border-color border-width underlay-color underlay-padding underlay-opacity underlay-shape color text-outline-width text-outline-color text-opacity"
       );
     });
   }
 
   function clearFocus() {
-  cy.elements().removeClass(
-    "faded faded-edge active-node neighbor-node active-edge show-label show-label-center show-region-label clicked-label search-match search-faded search-edge filter-focus filter-context filter-secondary filter-faded interaction-edge-muted"
-  );
-  clearNodeHighlightStyles();
-}
+    cy.elements().removeClass(
+      "faded faded-edge active-node neighbor-node active-edge show-label show-label-center show-region-label clicked-label search-match search-faded search-edge filter-focus filter-context filter-secondary filter-faded interaction-edge-muted"
+    );
+    clearNodeHighlightStyles();
+  }
 
   function applySearch(term) {
     cy.elements().removeClass("search-match search-faded search-edge");
@@ -1526,6 +1589,12 @@ return () => {
 
       const neighborhood = node.closedNeighborhood();
       neighborhood.removeClass("search-faded");
+
+      neighborhood.nodes().forEach((n) => {
+        if (Number(n.data("size")) < 45) {
+          n.addClass("show-label");
+        }
+      });
 
       node.connectedEdges().addClass("search-edge");
     });
@@ -1665,9 +1734,17 @@ return () => {
       if (focusNodeIds.has(node.id())) {
         node.removeClass("filter-faded");
         node.addClass("filter-focus");
+
+        if (Number(node.data("size")) < 45) {
+          node.addClass("show-label");
+        }
       } else if (contextNodeIds.has(node.id())) {
         node.removeClass("filter-faded");
         node.addClass("filter-context");
+
+        if (Number(node.data("size")) < 45) {
+          node.addClass("show-label");
+        }
       }
     });
 
@@ -1721,4 +1798,3 @@ return () => {
   </div>
 );
 }
-  
