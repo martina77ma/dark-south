@@ -1393,50 +1393,6 @@ cy.on("tap", "node", (e) => {
     node.addClass("clicked-label");
   }
 
-  // ===== CASO FILTRI ATTIVI =====
-  if (hasFilteredResults) {
-    const currentFocusNodes = cy.nodes(".filter-focus");
-    const currentContextNodes = cy.nodes(".filter-context");
-
-    cy.nodes().removeClass("filter-focus filter-secondary neighbor-node active-node");
-    cy.edges().removeClass("active-edge");
-    cy.edges().addClass("faded-edge");
-
-    currentFocusNodes.forEach((n) => {
-      if (n.id() !== node.id()) {
-        n.addClass("filter-secondary");
-      }
-    });
-
-    node.removeClass("filter-secondary");
-    node.addClass("filter-focus");
-    node.addClass("active-node");
-
-    currentContextNodes.forEach((n) => {
-      if (n.id() !== node.id()) {
-        n.addClass("filter-context");
-      }
-    });
-
-    const neighborhood = node.closedNeighborhood();
-    const connectedNodes = neighborhood.nodes().difference(node);
-    const connectedEdges = neighborhood.edges();
-
-    connectedNodes.removeClass(
-      "faded search-faded filter-faded filter-secondary active-node"
-    );
-    connectedNodes.addClass("neighbor-node");
-
-    connectedEdges.removeClass(
-      "faded-edge interaction-edge-muted filter-context search-edge"
-    );
-    connectedEdges.addClass("active-edge");
-
-    clearNodeHighlightStyles();
-    highlightNode(node);
-    return;
-  }
-
   // ===== CASO CLICK NORMALE =====
   cy.elements().addClass("faded");
   cy.edges().addClass("faded-edge");
@@ -1549,220 +1505,140 @@ return () => {
   }
 
   function applySearch(term) {
-    cy.elements().removeClass("search-match search-faded search-edge");
+  cy.elements().removeClass("search-match search-faded search-edge");
 
-    const normalized = term.trim().toLowerCase();
+  const normalized = term.trim().toLowerCase();
 
-    if (!normalized) {
-      return;
-    }
-
-    const matchedNodes = cy.nodes().filter((node) => {
-      const label = String(node.data("label") || "").toLowerCase();
-      const description = String(node.data("description") || "").toLowerCase();
-      const keywords = node.data("keywords") || [];
-
-      const keywordMatch =
-        Array.isArray(keywords) &&
-        keywords.some((keyword) =>
-          String(keyword).toLowerCase().includes(normalized)
-        );
-
-      return (
-        label.includes(normalized) ||
-        description.includes(normalized) ||
-        keywordMatch
-      );
-    });
-
-    if (matchedNodes.length === 0) {
-      cy.elements().addClass("search-faded");
-      onNodeSelect(null);
-      return;
-    }
-
-    cy.elements().addClass("search-faded");
-
-    matchedNodes.forEach((node) => {
-      node.removeClass("search-faded");
-      node.addClass("search-match");
-
-      const neighborhood = node.closedNeighborhood();
-      neighborhood.removeClass("search-faded");
-
-      neighborhood.nodes().forEach((n) => {
-        if (Number(n.data("size")) < 45) {
-          n.addClass("show-label");
-        }
-      });
-
-      node.connectedEdges().addClass("search-edge");
-    });
-
-    if (matchedNodes.length === 1) {
-      const matchedSize = Number(matchedNodes[0].data("size"));
-
-      if (matchedSize === 10) {
-        onNodeSelect(matchedNodes[0].data());
-      } else {
-        onNodeSelect(null);
-      }
-    } else {
-      onNodeSelect(null);
-    }
+  if (!normalized) {
+    onNodeSelect(null);
+    return;
   }
 
-  function applyFilters() {
-    cy.elements().removeClass(
-      "filter-faded filter-focus filter-context filter-secondary"
+  const matchedNodes = cy.nodes().filter((node) => {
+    const size = Number(node.data("size"));
+    if (size !== 10) return false;
+
+    const label = String(node.data("label") || "").toLowerCase();
+    const description = String(node.data("description") || "").toLowerCase();
+    const keywords = node.data("keywords") || [];
+
+    const keywordMatch =
+      Array.isArray(keywords) &&
+      keywords.some((keyword) =>
+        String(keyword).toLowerCase().includes(normalized)
+      );
+
+    return (
+      label.includes(normalized) ||
+      description.includes(normalized) ||
+      keywordMatch
     );
+  });
 
-    const sections = [];
+  if (matchedNodes.length === 0) {
+    cy.elements().addClass("search-faded");
+    onNodeSelect(null);
+    return;
+  }
 
-    if (eventSubcategory || eventDetail) {
-      sections.push((node) => {
-        const nodeEventSubcategory = node.data("eventSubcategory") || "";
-        const nodeEventDetail = node.data("eventDetail") || "";
+  // attenua tutto
+  cy.elements().addClass("search-faded");
 
-        const subcategoryMatch =
-          !eventSubcategory || nodeEventSubcategory === eventSubcategory;
+  // riaccende solo i nodi da 10 trovati
+  matchedNodes.forEach((node) => {
+    node.removeClass("search-faded");
+    node.addClass("search-match");
+    node.addClass("show-label");
+  });
 
-        const detailMatch =
-          !eventDetail || nodeEventDetail === eventDetail;
-
-        return subcategoryMatch && detailMatch;
-      });
-    }
-
-    if (placeCategory) {
-      sections.push((node) => {
-        const nodePlaceCategory = node.data("placeCategory") || "";
-        return nodePlaceCategory === placeCategory;
-      });
-    }
-
-    if (traceCategory || traceSubcategory) {
-      sections.push((node) => {
-        const nodeTraceCategory = node.data("traceCategory") || "";
-        const nodeTraceSubcategory = node.data("traceSubcategory") || "";
-
-        const categoryMatch =
-          !traceCategory || nodeTraceCategory === traceCategory;
-
-        const subcategoryMatch =
-          !traceSubcategory || nodeTraceSubcategory === traceSubcategory;
-
-        return categoryMatch && subcategoryMatch;
-      });
-    }
-
-    if (communitySubcategory) {
-      sections.push((node) => {
-        const nodeCommunitySubcategory = node.data("communitySubcategory") || "";
-        return nodeCommunitySubcategory === communitySubcategory;
-      });
-    }
-
-    if (sections.length === 0) {
-      return;
-    }
-
-    cy.elements().addClass("filter-faded");
-
-    const matchedNodes = cy.nodes().filter((node) => {
-      return sections.every((matchFn) => matchFn(node));
-    });
-
-    const contextNodeIds = new Set();
-    const focusNodeIds = new Set();
-
-    function addContextFromNode(node) {
-      const data = node.data();
-
-      focusNodeIds.add(node.id());
-
-      const labelsToKeep = [];
-
-      if (data.eventSubcategory) {
-        labelsToKeep.push("Eventi");
-        labelsToKeep.push(data.eventSubcategory);
-      }
-
-      if (data.eventDetail) {
-        labelsToKeep.push(data.eventDetail);
-      }
-
-      if (data.placeCategory) {
-        labelsToKeep.push("Luoghi");
-        labelsToKeep.push(data.placeCategory);
-      }
-
-      if (data.traceCategory) {
-        labelsToKeep.push("Tracce");
-
-        if (data.traceCategory === "Tracce intenzionali") {
-          labelsToKeep.push("Intenzionali");
-        }
-
-        if (data.traceCategory === "Tracce non intenzionali") {
-          labelsToKeep.push("Non intenzionali");
-        }
-      }
-
-      if (data.traceSubcategory) {
-        labelsToKeep.push(data.traceSubcategory);
-      }
-
-      if (data.communitySubcategory) {
-        labelsToKeep.push("Comunità");
-        labelsToKeep.push(data.communitySubcategory);
-      }
-
-      cy.nodes().forEach((candidate) => {
-        const label = candidate.data("label") || "";
-        if (labelsToKeep.includes(label)) {
-          contextNodeIds.add(candidate.id());
-        }
-      });
-    }
-
-    matchedNodes.forEach((node) => {
-      addContextFromNode(node);
-    });
-
-    cy.nodes().forEach((node) => {
-      if (focusNodeIds.has(node.id())) {
-        node.removeClass("filter-faded");
-        node.addClass("filter-focus");
-
-        if (Number(node.data("size")) < 45) {
-          node.addClass("show-label");
-        }
-      } else if (contextNodeIds.has(node.id())) {
-        node.removeClass("filter-faded");
-        node.addClass("filter-context");
-
-        if (Number(node.data("size")) < 45) {
-          node.addClass("show-label");
-        }
-      }
-    });
-
-    cy.edges().forEach((edge) => {
-      const sourceId = edge.source().id();
-      const targetId = edge.target().id();
-
-      if (
-        (focusNodeIds.has(sourceId) || contextNodeIds.has(sourceId)) &&
-        (focusNodeIds.has(targetId) || contextNodeIds.has(targetId))
-      ) {
-        edge.removeClass("filter-faded");
-        edge.addClass("filter-context");
-      }
-    });
-
+  // niente apertura automatica della scheda, a meno che tu non voglia mantenerla
+  if (matchedNodes.length === 1) {
+    onNodeSelect(matchedNodes[0].data());
+  } else {
     onNodeSelect(null);
   }
+}
+
+  function applyFilters() {
+  cy.elements().removeClass(
+    "filter-faded filter-focus filter-context filter-secondary"
+  );
+
+  const sections = [];
+
+  if (eventSubcategory || eventDetail) {
+    sections.push((node) => {
+      const nodeEventSubcategory = node.data("eventSubcategory") || "";
+      const nodeEventDetail = node.data("eventDetail") || "";
+
+      const subcategoryMatch =
+        !eventSubcategory || nodeEventSubcategory === eventSubcategory;
+
+      const detailMatch =
+        !eventDetail || nodeEventDetail === eventDetail;
+
+      return subcategoryMatch && detailMatch;
+    });
+  }
+
+  if (placeCategory) {
+    sections.push((node) => {
+      const nodePlaceCategory = node.data("placeCategory") || "";
+      return nodePlaceCategory === placeCategory;
+    });
+  }
+
+  if (traceCategory || traceSubcategory) {
+    sections.push((node) => {
+      const nodeTraceCategory = node.data("traceCategory") || "";
+      const nodeTraceSubcategory = node.data("traceSubcategory") || "";
+
+      const categoryMatch =
+        !traceCategory || nodeTraceCategory === traceCategory;
+
+      const subcategoryMatch =
+        !traceSubcategory || nodeTraceSubcategory === traceSubcategory;
+
+      return categoryMatch && subcategoryMatch;
+    });
+  }
+
+  if (communitySubcategory) {
+    sections.push((node) => {
+      const nodeCommunitySubcategory = node.data("communitySubcategory") || "";
+      return nodeCommunitySubcategory === communitySubcategory;
+    });
+  }
+
+  if (sections.length === 0) {
+    onNodeSelect(null);
+    return;
+  }
+
+  // attenua tutto
+  cy.elements().addClass("filter-faded");
+
+  // FILTRO SOLO SUI NODI DA 10
+  const matchedNodes = cy.nodes().filter((node) => {
+    const size = Number(node.data("size"));
+    if (size !== 10) return false;
+
+    return sections.every((matchFn) => matchFn(node));
+  });
+
+  // accende solo questi nodi
+  matchedNodes.forEach((node) => {
+    node.removeClass("filter-faded");
+    node.addClass("filter-focus");
+    node.addClass("show-label");
+  });
+
+  if (matchedNodes.length === 1) {
+    onNodeSelect(matchedNodes[0].data());
+  } else {
+    onNodeSelect(null);
+  }
+}
 
   clearFocus();
   applySearch(searchTerm || "");
