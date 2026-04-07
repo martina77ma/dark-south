@@ -1,3 +1,4 @@
+import "leaflet/dist/leaflet.css";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 

@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import dynamic from "next/dynamic";
+
+const LocationMap = dynamic(() => import("./LocationMap"), {
+  ssr: false
+});
 
 export default function Sidebar({ node, onClose }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -40,73 +45,6 @@ export default function Sidebar({ node, onClose }) {
   const hasImages = Array.isArray(node.images) && node.images.length > 0;
   const hasMultipleImages = hasImages && node.images.length > 1;
 
-  const titleStyle = {
-    margin: 0,
-    fontSize: "26px",
-    fontWeight: 800,
-    color: "#111827",
-    lineHeight: 1.15,
-    paddingRight: "12px",
-    fontFamily: "Inter, sans-serif"
-  };
-
-  const descriptionStyle = {
-    margin: 0,
-    fontSize: "16px",
-    lineHeight: 1.7,
-    color: "#1f2937",
-    fontFamily: "Inter, sans-serif"
-  };
-
-  const sectionWrapStyle = {
-    marginBottom: "22px"
-  };
-
-  const sectionTitleStyle = {
-    fontSize: "13px",
-    fontWeight: 700,
-    color: "#6b7280",
-    letterSpacing: "0.05em",
-    textTransform: "uppercase",
-    margin: 0,
-    paddingBottom: "8px",
-    borderBottom: "1px solid #e5e7eb",
-    fontFamily: "Inter, sans-serif"
-  };
-
-  const primaryValueStyle = {
-    margin: "12px 0 6px 0",
-    fontSize: "16px",
-    lineHeight: 1.5,
-    color: "#111827",
-    fontWeight: 600,
-    fontFamily: "Inter, sans-serif"
-  };
-
-  const secondaryValueStyle = {
-    margin: "0 0 4px 0",
-    fontSize: "15px",
-    lineHeight: 1.5,
-    color: "#374151",
-    fontFamily: "Inter, sans-serif"
-  };
-
-  const keywordsWrapStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "6px"
-  };
-
-  const keywordStyle = {
-    fontSize: "12px",
-    color: "#6b7280",
-    background: "#f9fafb",
-    border: "1px solid #e5e7eb",
-    borderRadius: "999px",
-    padding: "4px 8px",
-    fontFamily: "Inter, sans-serif"
-  };
-
   function showPrevImage() {
     if (!hasMultipleImages) return;
     setCurrentImageIndex((prev) =>
@@ -120,6 +58,28 @@ export default function Sidebar({ node, onClose }) {
       prev === node.images.length - 1 ? 0 : prev + 1
     );
   }
+
+  const titleStyle = {
+    margin: 0,
+    fontSize: "26px",
+    fontWeight: 800,
+    color: "#111827",
+    lineHeight: 1.15,
+    paddingRight: "12px",
+    fontFamily: "Inter, sans-serif"
+  };
+
+  const sectionTitleStyle = {
+    fontSize: "13px",
+    fontWeight: 700,
+    color: "#6b7280",
+    letterSpacing: "0.05em",
+    textTransform: "uppercase",
+    margin: 0,
+    paddingBottom: "8px",
+    borderBottom: "1px solid #e5e7eb",
+    fontFamily: "Inter, sans-serif"
+  };
 
   const lightbox =
     mounted && isLightboxOpen && hasImages
@@ -480,61 +440,45 @@ export default function Sidebar({ node, onClose }) {
           )}
 
           {node.tutela && (
-  <div
-    style={{
-      marginTop: "20px",
-      marginBottom: "1",
-      paddingTop: "16px",
-      borderTop: "1px solid #e5e7eb"
-    }}
-  >
-    <h3
-      style={{
-        margin: "0 0 6px 0",
-        fontSize: "12px",
-        fontWeight: 600,
-        fontFamily: "var(--font-inter)",
-        letterSpacing: "0.02em",
-        textTransform: "uppercase",
-        color: "#6b7280"
-      }}
-    >
-      Tutela
-    </h3>
-
-    <p
-      style={{
-        margin: 0,
-        fontSize: "15px",
-        lineHeight: 1.6,
-        fontFamily: "var(--font-inter)",
-        color: "#111827"
-      }}
-    >
-      {node.tutela}
-    </p>
-  </div>
-)}
-
-          {(node.eventSubcategory || node.eventDetail) && (
-            <div style={{
-              marginTop: "22px",
-              marginBottom: "22px" }}>
+            <div
+              style={{
+                marginTop: "20px",
+                marginBottom: "22px",
+                paddingTop: "16px",
+                borderTop: "1px solid #e5e7eb"
+              }}
+            >
               <h3
                 style={{
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  color: "#6b7280",
-                  letterSpacing: "0.05em",
+                  margin: "0 0 6px 0",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  fontFamily: "var(--font-inter)",
+                  letterSpacing: "0.02em",
                   textTransform: "uppercase",
-                  margin: 0,
-                  paddingBottom: "8px",
-                  borderBottom: "1px solid #e5e7eb",
-                  fontFamily: "Inter, sans-serif"
+                  color: "#6b7280"
                 }}
               >
-                Evento
+                Tutela
               </h3>
+
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "15px",
+                  lineHeight: 1.6,
+                  fontFamily: "var(--font-inter)",
+                  color: "#111827"
+                }}
+              >
+                {node.tutela}
+              </p>
+            </div>
+          )}
+
+          {(node.eventSubcategory || node.eventDetail) && (
+            <div style={{ marginBottom: "22px" }}>
+              <h3 style={sectionTitleStyle}>Evento</h3>
 
               {node.eventSubcategory && (
                 <p
@@ -567,72 +511,9 @@ export default function Sidebar({ node, onClose }) {
             </div>
           )}
 
-          {(node.placeCategory || node.place) && (
-            <div style={{ marginBottom: "22px" }}>
-              <h3
-                style={{
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  color: "#6b7280",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                  margin: 0,
-                  paddingBottom: "8px",
-                  borderBottom: "1px solid #e5e7eb",
-                  fontFamily: "Inter, sans-serif"
-                }}
-              >
-                Luogo
-              </h3>
-
-              {node.placeCategory && (
-                <p
-                  style={{
-                    margin: "12px 0 6px 0",
-                    fontSize: "16px",
-                    lineHeight: 1.5,
-                    color: "#111827",
-                    fontWeight: 600,
-                    fontFamily: "Inter, sans-serif"
-                  }}
-                >
-                  {node.placeCategory}
-                </p>
-              )}
-
-              {node.place && (
-                <p
-                  style={{
-                    margin: "0 0 4px 0",
-                    fontSize: "15px",
-                    lineHeight: 1.5,
-                    color: "#374151",
-                    fontFamily: "Inter, sans-serif"
-                  }}
-                >
-                  {node.place}
-                </p>
-              )}
-            </div>
-          )}
-
           {(node.traceCategory || node.traceSubcategory) && (
             <div style={{ marginBottom: "22px" }}>
-              <h3
-                style={{
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  color: "#6b7280",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                  margin: 0,
-                  paddingBottom: "8px",
-                  borderBottom: "1px solid #e5e7eb",
-                  fontFamily: "Inter, sans-serif"
-                }}
-              >
-                Tipo di traccia
-              </h3>
+              <h3 style={sectionTitleStyle}>Tipo di traccia</h3>
 
               {node.traceCategory && (
                 <p
@@ -665,23 +546,48 @@ export default function Sidebar({ node, onClose }) {
             </div>
           )}
 
+          {(node.placeCategory || node.place) && (
+            <div style={{ marginBottom: "22px" }}>
+              <h3 style={sectionTitleStyle}>Luogo</h3>
+
+              {node.placeCategory && (
+                <p
+                  style={{
+                    margin: "12px 0 6px 0",
+                    fontSize: "16px",
+                    lineHeight: 1.5,
+                    color: "#111827",
+                    fontWeight: 600,
+                    fontFamily: "Inter, sans-serif"
+                  }}
+                >
+                  {node.placeCategory}
+                </p>
+              )}
+
+              {node.place && (
+                <p
+                  style={{
+                    margin: "0 0 4px 0",
+                    fontSize: "15px",
+                    lineHeight: 1.5,
+                    color: "#374151",
+                    fontFamily: "Inter, sans-serif"
+                  }}
+                >
+                  {node.place}
+                </p>
+              )}
+
+              {typeof node.lat === "number" && typeof node.lng === "number" && (
+                <LocationMap lat={node.lat} lng={node.lng} />
+              )}
+            </div>
+          )}
+
           {(node.communityCategory || node.communitySubcategory) && (
             <div style={{ marginBottom: "22px" }}>
-              <h3
-                style={{
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  color: "#6b7280",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                  margin: 0,
-                  paddingBottom: "8px",
-                  borderBottom: "1px solid #e5e7eb",
-                  fontFamily: "Inter, sans-serif"
-                }}
-              >
-                Comunità
-              </h3>
+              <h3 style={sectionTitleStyle}>Comunità</h3>
 
               {node.communityCategory && (
                 <p
@@ -744,26 +650,12 @@ export default function Sidebar({ node, onClose }) {
           )}
 
           {node.other && node.other !== "-" && (
-            <div style={{ marginBottom: "22px" }}>
-              <h3
-                style={{
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  color: "#6b7280",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                  margin: 0,
-                  paddingBottom: "8px",
-                  borderBottom: "1px solid #e5e7eb",
-                  fontFamily: "Inter, sans-serif"
-                }}
-              >
-                Altro
-              </h3>
+            <div style={{ marginTop: "22px" }}>
+              <h3 style={sectionTitleStyle}>Altro</h3>
 
               <p
                 style={{
-                  margin: "0 0 4px 0",
+                  margin: "12px 0 4px 0",
                   fontSize: "15px",
                   lineHeight: 1.5,
                   color: "#374151",

@@ -307,37 +307,133 @@ export default function GraphView({
           }
         },
 
-        // ETICHETTE FISSE SOLO NODI GRANDI
-        {
-          selector: 'node[size > 46]',
-          style: {
-            label: "data(label)",
-            "font-size": 24,
-            "font-family": "var(--font-inter)",
-            "font-weight": 400,
-            color: "#111827",
-            "text-valign": "center",
-            "text-halign": "center",
-            "text-margin-y": 0
-          }
-        },
+        // ETICHETTE FISSE - NODI DA 75
+{
+  selector: 'node[size = 75]',
+  style: {
+    label: "data(label)",
+    "font-size": 24,
+    "font-family": "var(--font-inter)",
+    "font-weight": 500,
+    color: "#111827",
+    "text-valign": "center",
+    "text-halign": "center",
+    "text-margin-y": 0,
+    "text-wrap": "wrap",
+    "text-max-width": 90,
+    "text-outline-width": 3,
+    "text-outline-color": "#ffffff"
+  }
+},
 
-        // ETICHETTE TEMPORANEE
-        {
-          selector: ".show-label",
-          style: {
-            label: "data(label)",
-            "font-size": 11,
-            "font-family": "var(--font-inter)",
-            color: "#111827",
-            "text-valign": "top",
-            "text-halign": "center",
-            "text-margin-y": -10,
-            "text-background-opacity": 1,
-            "text-background-color": "#ffffff",
-            "text-background-padding": 2
-          }
-        },
+// ETICHETTE FISSE - NODI DA 45
+{
+  selector: 'node[size = 45]',
+  style: {
+    label: "",
+    "font-size": 8,
+    "font-family": "var(--font-inter)",
+    "font-weight": 400,
+    color: "#000000",
+    "text-valign": "center",
+    "text-halign": "center",
+    "text-margin-y": 0,
+    "text-wrap": "wrap",
+    "text-max-width": 44,
+    "text-outline-width": 1.5,
+    "text-outline-color": "#ffffff"
+  }
+},
+{
+  selector: 'node[size = 45].show-45-fixed',
+  style: {
+    label: "data(label)"
+  }
+},
+{
+  selector: 'node[size = 45][label = "Riconoscimento"]',
+  style: {
+    "font-size": 7,
+    "text-max-width": 40
+  }
+},
+{
+  selector: 'node[label = "Calabria"], node[label = "Campania"], node[label = "Puglia"], node[label = "Sicilia"], node[label = "Basilicata"]',
+  style: {
+    "text-opacity": 0
+  }
+},
+{
+  selector: 'node[label = "Calabria"].show-region-label, node[label = "Campania"].show-region-label, node[label = "Puglia"].show-region-label, node[label = "Sicilia"].show-region-label, node[label = "Basilicata"].show-region-label',
+  style: {
+    label: "data(label)",
+    "text-opacity": 1,
+    "font-size": 10,
+    "font-family": "var(--font-inter)",
+    "font-weight": 500,
+    color: "#111827",
+    "text-valign": "top",
+    "text-halign": "center",
+    "text-margin-y": -10,
+    "text-wrap": "wrap",
+    "text-max-width": 80,
+    "text-background-opacity": 1,
+    "text-background-color": "#ffffff",
+    "text-background-padding": 4,
+    "text-border-width": 1,
+    "text-border-color": "#e5e7eb",
+    "text-border-opacity": 1,
+    "text-border-style": "solid",
+    "text-outline-width": 0,
+    "z-index": 999
+  }
+},
+
+// ETICHETTE TEMPORANEE - NODI SOTTO 45
+{
+  selector: ".show-label",
+  style: {
+    label: "data(label)",
+    "font-size": 10,
+    "font-family": "var(--font-inter)",
+    "font-weight": 500,
+    color: "#111827",
+    "text-valign": "top",
+    "text-halign": "center",
+    "text-margin-y": -10,
+    "text-wrap": "wrap",
+    "text-max-width": 110,
+    "text-background-opacity": 1,
+    "text-background-color": "#ffffff",
+    "text-background-padding": 4,
+    "text-border-width": 1,
+    "text-border-color": "#e5e7eb",
+    "text-border-opacity": 1,
+    "text-border-style": "solid",
+    "text-outline-width": 0,
+    "text-opacity": 1,
+    "z-index": 999
+  }
+},
+{
+  selector: ".show-label-center",
+  style: {
+    label: "data(label)",
+    "font-size": 7,
+    "font-family": "var(--font-inter)",
+    "font-weight": 400,
+    color: "#374151",
+    "text-valign": "center",
+    "text-halign": "center",
+    "text-margin-y": 0,
+    "text-wrap": "wrap",
+    "text-max-width": 44,
+    "text-outline-width": 1.5,
+    "text-outline-color": "#ffffff",
+    "text-opacity": 1,
+    "z-index": 999
+  }
+},
 
         // TEMATISMI GENERALI
         {
@@ -832,12 +928,29 @@ export default function GraphView({
         });
       });
     }
+    function updateZoomLabelMode() {
+  const zoom = cy.zoom();
+
+  const regionNodes = cy.nodes(
+    '[label = "Calabria"], [label = "Campania"], [label = "Puglia"], [label = "Sicilia"], [label = "Basilicata"]'
+  );
+
+  const regular45Nodes = cy.nodes('[size = 45]').difference(regionNodes);
+
+  regionNodes.removeClass("show-45-fixed");
+
+  if (zoom >= 2) {
+    regular45Nodes.addClass("show-45-fixed");
+  } else {
+    regular45Nodes.removeClass("show-45-fixed");
+  }
+}
 
     function clearNodeHighlightStyles() {
   cy.nodes().forEach((node) => {
     node.removeStyle(
-      "background-color border-color border-width underlay-color underlay-padding underlay-opacity underlay-shape color"
-  );
+      "background-color border-color border-width underlay-color underlay-padding underlay-opacity underlay-shape color text-outline-width text-outline-color text-opacity"
+    );
   });
 }
 
@@ -860,7 +973,9 @@ if (size === 75) {
     "background-color": fillColor,
     "border-color": fillColor,
     "border-width": 6,
-    color: "#ffffff"
+    color: "#ffffff",
+    "text-outline-width": 0,
+    "text-outline-color": "transparent"
   });
 
   return;
@@ -920,11 +1035,12 @@ function highlightCollection(nodesCollection) {
 }
 
     function clearFocus() {
-      cy.elements().removeClass(
-        "faded faded-edge active-node neighbor-node active-edge show-label clicked-label search-match search-faded search-edge filter-focus filter-context filter-secondary filter-faded interaction-edge-muted"
-      );
+  cy.elements().removeClass(
+    "faded faded-edge active-node neighbor-node active-edge show-label show-label-center show-region-label clicked-label search-match search-faded search-edge filter-focus filter-context filter-secondary filter-faded interaction-edge-muted"
+  );
 
-      clearNodeHighlightStyles();
+  clearNodeHighlightStyles();
+  updateZoomLabelMode();
 }
 
     function applySearch(term) {
@@ -962,14 +1078,24 @@ function highlightCollection(nodesCollection) {
       cy.elements().addClass("search-faded");
 
       matchedNodes.forEach((node) => {
-        node.removeClass("search-faded");
-        node.addClass("search-match");
+  node.removeClass("search-faded");
+  node.addClass("search-match");
 
-        const neighborhood = node.closedNeighborhood();
-        neighborhood.removeClass("search-faded");
+  if (Number(node.data("size")) < 45) {
+    node.addClass("show-label");
+  }
 
-        node.connectedEdges().addClass("search-edge");
-      });
+  const neighborhood = node.closedNeighborhood();
+  neighborhood.removeClass("search-faded");
+
+  neighborhood.nodes().forEach((n) => {
+    if (Number(n.data("size")) < 45) {
+      n.addClass("show-label");
+    }
+  });
+
+  node.connectedEdges().addClass("search-edge");
+});
 
       if (matchedNodes.length === 1) {
          const matchedSize = Number(matchedNodes[0].data("size"));
@@ -1101,14 +1227,22 @@ function highlightCollection(nodesCollection) {
       });
 
       cy.nodes().forEach((node) => {
-        if (focusNodeIds.has(node.id())) {
-          node.removeClass("filter-faded");
-          node.addClass("filter-focus");
-        } else if (contextNodeIds.has(node.id())) {
-          node.removeClass("filter-faded");
-          node.addClass("filter-context");
-        }
-      });
+  if (focusNodeIds.has(node.id())) {
+    node.removeClass("filter-faded");
+    node.addClass("filter-focus");
+
+    if (Number(node.data("size")) < 45) {
+      node.addClass("show-label");
+    }
+  } else if (contextNodeIds.has(node.id())) {
+    node.removeClass("filter-faded");
+    node.addClass("filter-context");
+
+    if (Number(node.data("size")) < 45) {
+      node.addClass("show-label");
+    }
+  }
+});
 
       cy.edges().forEach((edge) => {
         const sourceId = edge.source().id();
@@ -1125,22 +1259,63 @@ function highlightCollection(nodesCollection) {
 
     }
     cy.on("mouseover", "node", (e) => {
-      const node = e.target;
-      const size = Number(node.data("size"));
+  const node = e.target;
+  const size = Number(node.data("size"));
+  const label = node.data("label");
+  const zoom = cy.zoom();
 
-      if (size <= 46) {
-        node.addClass("show-label");
-      }
-    });
+  const isRegionNode = [
+    "Calabria",
+    "Campania",
+    "Puglia",
+    "Sicilia",
+    "Basilicata"
+  ].includes(label);
 
-    cy.on("mouseout", "node", (e) => {
-      const node = e.target;
-      const size = Number(node.data("size"));
+  const shouldShow45Hover = size === 45 && zoom < 2 && !isRegionNode;
 
-      if (size <= 46 && !node.hasClass("clicked-label")) {
-        node.removeClass("show-label");
-      }
-    });
+  if (size < 45 && !isRegionNode) {
+    node.addClass("show-label");
+  }
+
+  if (shouldShow45Hover) {
+    node.addClass("show-label-center");
+  }
+
+  if (isRegionNode) {
+  node.removeClass("show-45-fixed");
+  node.addClass("show-region-label");
+}
+});
+
+cy.on("mouseout", "node", (e) => {
+  const node = e.target;
+  const size = Number(node.data("size"));
+  const label = node.data("label");
+  const zoom = cy.zoom();
+
+  const isRegionNode = [
+    "Calabria",
+    "Campania",
+    "Puglia",
+    "Sicilia",
+    "Basilicata"
+  ].includes(label);
+
+  const shouldShow45Hover = size === 45 && zoom < 2 && !isRegionNode;
+
+  if (size < 45 && !isRegionNode && !node.hasClass("clicked-label")) {
+    node.removeClass("show-label");
+  }
+
+  if (shouldShow45Hover && !node.hasClass("clicked-label")) {
+    node.removeClass("show-label-center");
+  }
+
+  if (isRegionNode && !node.hasClass("clicked-label")) {
+    node.removeClass("show-region-label");
+  }
+});
 
     cy.on("tap", "node", (e) => {
       const node = e.target;
@@ -1153,12 +1328,38 @@ function highlightCollection(nodesCollection) {
       }
 
       cy.nodes().removeClass("clicked-label");
-      cy.nodes().removeClass("show-label");
+cy.nodes().removeClass("show-label");
+cy.nodes().removeClass("show-label-center");
+cy.nodes().removeClass("show-region-label");
 
-      if (size <= 46) {
-        node.addClass("show-label");
-        node.addClass("clicked-label");
-      }
+const zoom = cy.zoom();
+const label = node.data("label");
+
+const isRegionNode = [
+  "Calabria",
+  "Campania",
+  "Puglia",
+  "Sicilia",
+  "Basilicata"
+].includes(label);
+
+const shouldShow45Hover = size === 45 && zoom < 2 && !isRegionNode;
+
+if (size < 45 && !isRegionNode) {
+  node.addClass("show-label");
+  node.addClass("clicked-label");
+}
+
+if (shouldShow45Hover) {
+  node.addClass("show-label-center");
+  node.addClass("clicked-label");
+}
+
+if (isRegionNode) {
+  node.removeClass("show-45-fixed");
+  node.addClass("show-region-label");
+  node.addClass("clicked-label");
+}
 
       const hasFilteredResults =
         cy.nodes(".filter-focus").length > 0 ||
@@ -1212,9 +1413,14 @@ function highlightCollection(nodesCollection) {
       }
     });
 
-    cy.on("pan zoom", () => {
-      handleViewportInteraction();
-    });
+    cy.on("pan", () => {
+  handleViewportInteraction();
+});
+
+cy.on("zoom", () => {
+  handleViewportInteraction();
+  updateZoomLabelMode();
+});
 
     const container = ref.current;
 
@@ -1246,8 +1452,9 @@ function highlightCollection(nodesCollection) {
     window.addEventListener("mouseup", handleMouseUp);
 
     applyEdgeGradients();
+    updateZoomLabelMode();
 
-    return () => {
+return () => {
       clearTimeout(interactionTimeout);
       container.removeEventListener("mousedown", handleMouseDown);
       container.removeEventListener("mousemove", handleMouseMove);
@@ -1272,11 +1479,11 @@ function highlightCollection(nodesCollection) {
   }
 
   function clearFocus() {
-    cy.elements().removeClass(
-      "faded faded-edge active-node neighbor-node active-edge show-label clicked-label search-match search-faded search-edge filter-focus filter-context filter-secondary filter-faded interaction-edge-muted"
-    );
-    clearNodeHighlightStyles();
-  }
+  cy.elements().removeClass(
+    "faded faded-edge active-node neighbor-node active-edge show-label show-label-center show-region-label clicked-label search-match search-faded search-edge filter-focus filter-context filter-secondary filter-faded interaction-edge-muted"
+  );
+  clearNodeHighlightStyles();
+}
 
   function applySearch(term) {
     cy.elements().removeClass("search-match search-faded search-edge");
